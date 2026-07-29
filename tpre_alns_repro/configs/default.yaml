@@ -1,0 +1,118 @@
+schema_version: 1
+
+experiment:
+  name: tpre_alns_manuscript
+  base_instances_per_scale: 10
+  run_seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  # These three seed domains are intentionally disjoint.
+  instance_seed_base: 100000
+  optimization_scenario_seed_base: 300000
+  out_of_sample_scenario_seed_base: 900000
+  methods:
+    - deterministic_alns
+    - full_recourse_risk_aware_alns
+    - tpre_without_backup
+    - tpre_without_cvar
+    - tpre_alns
+
+instances:
+  scales:
+    small:  {customers: 25, stations: 5,  iterations: 3000}
+    medium: {customers: 50, stations: 8,  iterations: 6000}
+    large:  {customers: 100, stations: 12, iterations: 10000}
+  optimization_scenarios: 50
+  out_of_sample_scenarios: 500
+  planning_horizon_min: 1080
+  day_start_clock: "06:00"
+  interval_min: 60
+  coordinate_domain_km: [0, 100]
+
+charging_station:
+  chargers_per_station: [4, 6, 8]
+  charger_probabilities: [0.30, 0.40, 0.30]
+  charging_power_kw: [60, 120]
+  charging_power_probabilities: [0.50, 0.50]
+  reported_unavailable_probability: 0.05
+  tariff_cu_per_kwh: {valley: 0.45, flat: 0.75, peak: 1.20}
+
+vehicle:
+  load_capacity: 1000.0
+  battery_capacity_kwh: 80.0
+  initial_battery_kwh: 80.0
+  safety_battery_kwh: 8.0
+  energy_consumption_kwh_per_km: 0.24
+  travel_speed_km_per_min: 0.65
+
+rest:
+  max_continuous_work_min: 240
+  min_rest_min: 30
+
+costs:
+  vehicle_use_cost: 100.0
+  travel_cost_per_km: 1.20
+  waiting_cost_per_hour: 30.0
+  driver_cost_per_hour: 25.0
+  local_repair_fixed_cost: 50.0
+  infeasibility_penalty: 10000.0
+
+risk:
+  cvar_alpha: 0.90
+  risk_aversion: 0.50
+  risk_threshold_percentile: 80
+  infeasibility_coefficient: 100.0
+  vulnerability_coefficient: 25.0
+  insertion_kappa: 0.01
+  insertion_shortlist: 5
+
+scenario_settings:
+  low_occ_low_damage:
+    {occupation_probability: 0.25, hidden_damage_probability: 0.01,
+     waiting_min: 5, waiting_max: 20}
+  high_occ_low_damage:
+    {occupation_probability: 0.65, hidden_damage_probability: 0.01,
+     waiting_min: 20, waiting_max: 50}
+  low_occ_high_damage:
+    {occupation_probability: 0.25, hidden_damage_probability: 0.06,
+     waiting_min: 5, waiting_max: 20}
+  high_occ_high_damage:
+    {occupation_probability: 0.65, hidden_damage_probability: 0.06,
+     waiting_min: 20, waiting_max: 50}
+  extreme:
+    {occupation_probability: 0.80, hidden_damage_probability: 0.10,
+     waiting_min: 35, waiting_max: 75}
+
+alns:
+  destroy_rate_min: 0.10
+  destroy_rate_max: 0.30
+  initial_temperature: 100.0
+  cooling_rate: 0.995
+  weight_update_period: 50
+  reaction_factor: 0.20
+  minimum_operator_weight: 0.05
+  high_risk_full_evaluation_probability: 0.05
+  max_no_improve: 500
+
+local_search:
+  route_probability: 0.40
+  severity_percentiles: [10, 50, 90]
+
+targeted_repair:
+  failure_threshold: 0.50
+
+evaluator:
+  training_samples: 20000
+  train_split: 0.70
+  validation_split: 0.15
+  test_split: 0.15
+  input_features: 24
+  shared_encoder: [128, 64]
+  dropout: 0.10
+  learning_rate: 0.001
+  weight_decay: 0.00001
+  batch_size: 128
+  epochs: 80
+  early_stop_patience: 10
+  main_seed: 2025
+  sensitivity_seeds: [2023, 2024, 2025]
+  diagnostic_probability_threshold: 0.37
+  loss_weights: {beta: 1.0, gamma: 0.50, delta: 0.20, omega: 0.00001}

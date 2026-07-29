@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use this software, cite the associated manuscript and this repository."
+title: "TPRE-ALNS reproducibility code"
+type: software
+version: 1.0.0
+date-released: 2026-07-29
+license: MIT
+repository-code: "https://github.com/lingchenliang/tpre_alns_repro"
+authors:
+  - family-names: Liang
+    given-names: Lingchen
+  - family-names: Li
+    given-names: Yue
+  - family-names: Sun
+    given-names: Feiyu
+  - family-names: Yan
+    given-names: Wenhao
+  - family-names: Su
+    given-names: Hengjie
+preferred-citation:
+  type: article
+  title: "Learning-assisted risk-aware electric delivery routing under uncertain charging-station availability"
+  authors:
+    - family-names: Liang
+      given-names: Lingchen
+    - family-names: Li
+      given-names: Yue
+    - family-names: Sun
+      given-names: Feiyu
+    - family-names: Yan
+      given-names: Wenhao
+    - family-names: Su
+      given-names: Hengjie

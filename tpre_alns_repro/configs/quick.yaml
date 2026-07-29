@@ -1,0 +1,84 @@
+schema_version: 1
+
+experiment:
+  name: tpre_alns_quick_smoke
+  base_instances_per_scale: 1
+  run_seeds: [1]
+  instance_seed_base: 110000
+  optimization_scenario_seed_base: 310000
+  out_of_sample_scenario_seed_base: 910000
+  methods: [deterministic_alns, tpre_alns]
+
+instances:
+  scales:
+    smoke: {customers: 8, stations: 3, iterations: 20}
+  optimization_scenarios: 5
+  out_of_sample_scenarios: 10
+  planning_horizon_min: 1080
+  day_start_clock: "06:00"
+  interval_min: 60
+  coordinate_domain_km: [0, 100]
+
+charging_station:
+  chargers_per_station: [4, 6, 8]
+  charger_probabilities: [0.30, 0.40, 0.30]
+  charging_power_kw: [60, 120]
+  charging_power_probabilities: [0.50, 0.50]
+  reported_unavailable_probability: 0.05
+  tariff_cu_per_kwh: {valley: 0.45, flat: 0.75, peak: 1.20}
+
+vehicle:
+  load_capacity: 1000.0
+  battery_capacity_kwh: 80.0
+  initial_battery_kwh: 80.0
+  safety_battery_kwh: 8.0
+  energy_consumption_kwh_per_km: 0.24
+  travel_speed_km_per_min: 0.65
+
+rest: {max_continuous_work_min: 240, min_rest_min: 30}
+costs:
+  vehicle_use_cost: 100.0
+  travel_cost_per_km: 1.20
+  waiting_cost_per_hour: 30.0
+  driver_cost_per_hour: 25.0
+  local_repair_fixed_cost: 50.0
+  infeasibility_penalty: 10000.0
+risk:
+  cvar_alpha: 0.90
+  risk_aversion: 0.50
+  risk_threshold_percentile: 80
+  insertion_kappa: 0.01
+  insertion_shortlist: 3
+scenario_settings:
+  high_occ_high_damage:
+    {occupation_probability: 0.65, hidden_damage_probability: 0.06,
+     waiting_min: 20, waiting_max: 50}
+alns:
+  destroy_rate_min: 0.10
+  destroy_rate_max: 0.30
+  initial_temperature: 100.0
+  cooling_rate: 0.995
+  weight_update_period: 10
+  reaction_factor: 0.20
+  minimum_operator_weight: 0.05
+  high_risk_full_evaluation_probability: 0.05
+  max_no_improve: 20
+local_search: {route_probability: 0.40, severity_percentiles: [10, 50, 90]}
+targeted_repair: {failure_threshold: 0.50}
+evaluator:
+  training_samples: 200
+  train_split: 0.70
+  validation_split: 0.15
+  test_split: 0.15
+  input_features: 24
+  shared_encoder: [128, 64]
+  dropout: 0.10
+  learning_rate: 0.001
+  weight_decay: 0.00001
+  batch_size: 32
+  epochs: 2
+  early_stop_patience: 2
+  main_seed: 2025
+  sensitivity_seeds: [2025]
+  diagnostic_probability_threshold: 0.37
+  loss_weights: {beta: 1.0, gamma: 0.50, delta: 0.20, omega: 0.00001}
