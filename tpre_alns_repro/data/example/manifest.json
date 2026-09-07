@@ -1,0 +1,48 @@
+{
+  "files": [
+    {
+      "instance_id": "evrptw_n25_seed1147386706",
+      "path": "instances/n25/instance_00_seed1147386706.json",
+      "role": "instance",
+      "sha256": "a99fd021f3a9d425d725ed3c47996c142382b7b1cb879f3121a6627f42764d73"
+    },
+    {
+      "instance_id": "evrptw_n25_seed1147386706",
+      "path": "scenarios/optimization/low_occ_low_damage/evrptw_n25_seed1147386706.jsonl.gz",
+      "role": "optimization_scenarios",
+      "scenario_count": 2,
+      "setting": "low_occ_low_damage",
+      "sha256": "857433a2bba5bffb54c29524779dc679d8e60dc8ca1ef42a5df1fde55b78bd86"
+    },
+    {
+      "instance_id": "evrptw_n25_seed1147386706",
+      "path": "scenarios/out_of_sample/low_occ_low_damage/evrptw_n25_seed1147386706.jsonl.gz",
+      "role": "out_of_sample_scenarios",
+      "scenario_count": 3,
+      "setting": "low_occ_low_damage",
+      "sha256": "b6cb5cd4f5d68c328909d6df37b24c7bfc20322c15bb4a42badc6a8563035d6d"
+    },
+    {
+      "instance_id": "evrptw_n25_seed1147386706",
+      "path": "scenarios/optimization/extreme_disruption/evrptw_n25_seed1147386706.jsonl.gz",
+      "role": "optimization_scenarios",
+      "scenario_count": 2,
+      "setting": "extreme_disruption",
+      "sha256": "0c90677713482d81ff4591ec0bd7184459bba63b9cc16c8703c9f920ae08f74c"
+    },
+    {
+      "instance_id": "evrptw_n25_seed1147386706",
+      "path": "scenarios/out_of_sample/extreme_disruption/evrptw_n25_seed1147386706.jsonl.gz",
+      "role": "out_of_sample_scenarios",
+      "scenario_count": 3,
+      "setting": "extreme_disruption",
+      "sha256": "6b1aedc4378b69238803819bc8b331a972a82a62a31727bb7be138165dea5641"
+    }
+  ],
+  "generated_at_utc": "2026-09-07T02:32:18.561549+00:00",
+  "numpy_version": "2.3.5",
+  "python_version": "3.13.5",
+  "root_seed": 20260907,
+  "schema_version": "1.0.0",
+  "scope_note": "Newly generated reference data. These files are not the original run-level data underlying manuscript tables."
+}

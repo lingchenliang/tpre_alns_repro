@@ -1,53 +1,45 @@
-# TPRE-ALNS reproducibility code
+# TPRE-ALNS reproducibility starter
 
-Reference implementation for the manuscript:
+Reference code and synthetic-data generator for the manuscript:
 
-> **Learning-assisted risk-aware electric delivery routing under uncertain
-> charging-station availability**
+> **Learning-guided risk-aware adaptive large neighborhood search for electric delivery routing under uncertain public charging-station availability**
 
-The repository implements the updated method described in the manuscript and
-supplementary information: synthetic VRPTW-style instance generation,
-time-dependent charger scenarios, deterministic energy/rest restoration,
-wait-first fixed-rule recourse, the planning + expected scenario cost +
-scenario-cost CVaR objective, the 24-feature twin-branch evaluator, and
-TPRE-ALNS.
+## Research-integrity and provenance note
 
-This release is designed for method inspection and reproducible new runs. It
-does **not** contain fabricated copies of the manuscript's reported CSVs or
-metrics. Exact numerical equality with the published tables additionally
-requires the archived base-instance/scenario seeds, route pool, run-level
-outputs, normalization statistics and seed-2025 evaluator checkpoint named in
-the Data Availability Statement.
+This repository is a **clean-room reference implementation reconstructed from the manuscript and S1 Appendix**. It generates new synthetic benchmark instances and charger-state scenarios according to the documented rules. It does **not** contain the original ALNS solver, the complete fixed-rule route-recourse simulator, the trained seed-2025 checkpoint, or the run-level outputs that produced the numerical tables in the manuscript.
+
+Do not describe the example files in `data/example/` as the original experimental data. To support exact reproduction of reported results, add the original implementation, exact seeds, route pool, normalization statistics, checkpoint, run-level outputs, and experiment manifest.
 
 ## What is implemented
 
-- Supplementary Algorithm S2 synthetic instance generator.
-- Pre-dispatch reported unavailability `D_jt`, sampled once per base instance.
-- Conditional occupation and hidden-damage generation (Equations 3-5).
-- Available / occupied / failed state classification and stored queue delays.
-- Partial charging with minute-consistent, cross-period tariff allocation.
-- Distinct start and terminal depot copies.
-- Hard-window, load, battery and continuous-work propagation.
-- Qualifying rest at the depot or a charging station; synchronized
-  wait/charge/rest uses the maximum-duration rule.
-- Wait-first recourse: iterative waiting, assigned backup, local repair, then
-  one unrecovered-infeasibility penalty per vehicle route and scenario.
-- Planning cost separated from scenario-dependent cost before expectation and
-  CVaR are computed.
-- Exactly 24 stop-level screening features with training-only normalization
-  support.
-- Shared `24 -> 128 -> 64` twin encoder, masked mean pooling, absolute
-  difference fusion, two route heads and one station head (65,091 parameters).
-- Frozen hand-crafted proxy from Equations 80-86.
-- Algorithm S1 candidate history, 80th-percentile rolling threshold, targeted
-  repair, 0.05 full-evaluation safeguard, SA acceptance and adaptive weights.
-- Deterministic, full-recourse and component-ablation method configurations.
-- Optional deterministic first-stage Gurobi reference with a 600-second cap.
-- Disjoint optimization/out-of-sample seed domains and run manifests.
+- Synthetic 25-, 50-, and 100-customer instance generation.
+- 5, 8, and 12 public charging stations by scale.
+- Depot at `(50, 50)` km; other coordinates sampled in `[0, 100] x [0, 100]` km.
+- Customer demand `DiscreteUniform{10,...,50}` kg.
+- Service duration `Uniform(5,15)` min.
+- Time-window width `Uniform(60,180)` min; ready time sampled so the due time stays within the 1080-min horizon.
+- Station charger counts `{4,6,8}` with probabilities `{0.30,0.40,0.30}`.
+- Charging powers `{60,120}` kW with probabilities `{0.50,0.50}`.
+- Reported-unavailable chargers drawn once per station-hour as `Binomial(n_chargers, 0.05)`.
+- Scenario occupation and hidden damage drawn conditionally from the remaining charger pool.
+- Low/high/extreme occupation probabilities `0.25/0.65/0.80`.
+- Low/high/extreme hidden-damage probabilities `0.01/0.06/0.10`.
+- Queue-delay ranges `U(5,20)`, `U(20,50)`, and `U(35,75)` minutes.
+- Euclidean distance, travel time at `0.65 km/min`, and energy at `0.24 kWh/km`.
+- 24-feature schema and training-only z-score helpers.
+- Twin-branch MLP architecture `24 -> 128 -> 64`, difference-aware fusion, two route heads, and one station head. The model has exactly **65,091 trainable parameters**.
+- Empirical CVaR, risk-aware objective, route-risk score, and pairwise ranking helpers.
+- SHA-256 manifest for every generated instance/scenario file.
 
-The traceability table in
-[`docs/METHOD_MAPPING.md`](docs/METHOD_MAPPING.md) maps manuscript equations and
-supplementary tables to source files and tests.
+## What is not implemented
+
+- The original adaptive large neighborhood search.
+- Deterministic energy/rest restoration and backup completion.
+- The complete wait -> assigned backup -> local repair -> penalty simulator.
+- Route-pool generation and exact training labels.
+- The original trained checkpoint and reported result tables.
+
+These components must be added from the authors' actual experiment source before claiming end-to-end reproducibility.
 
 ## Installation
 
@@ -55,156 +47,90 @@ Python 3.11 is recommended.
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate             # Windows: .venv\Scripts\activate
-python -m pip install --upgrade pip
-pip install -e .                      # routing + hand-crafted proxy
-pip install -e ".[ml,test]"           # twin evaluator + tests
+# Windows
+.venv\Scripts\activate
+# Linux/macOS
+source .venv/bin/activate
+
+pip install -r requirements.txt
 ```
 
-`gurobipy==12.0.3` and a valid Gurobi license are needed only for the optional
-MILP reference:
+The generator requires only NumPy. PyTorch is needed only for the twin-branch model definition.
+
+## Generate a small example
 
 ```bash
-pip install -e ".[milp]"
+python tpre_repro.py generate \
+  --output generated_example \
+  --scales 25 \
+  --base-instances 1 \
+  --optimization-scenarios 3 \
+  --oos-scenarios 5 \
+  --settings low_occ_low_damage extreme_disruption \
+  --root-seed 20260907
 ```
 
-## Quick smoke run
+## Generate the documented scale and scenario counts
+
+The command below creates 10 base instances at each scale and separate scenario files for all five robustness settings:
 
 ```bash
-python scripts/run_demo.py \
-  --customers 8 \
-  --stations 3 \
-  --scenarios 5 \
-  --iterations 20 \
-  --method tpre_alns \
-  --out results/demo
+python tpre_repro.py generate \
+  --output data/generated_reference \
+  --scales 25 50 100 \
+  --base-instances 10 \
+  --optimization-scenarios 50 \
+  --oos-scenarios 500 \
+  --settings all \
+  --root-seed 20260907
 ```
 
-Without `--evaluator-checkpoint`, the quick run uses the frozen hand-crafted
-proxy. This is intentionally labeled in the output and must not be reported as
-the trained twin model. Every accepted move is still judged by the complete
-scenario evaluator.
+This creates **new reference data**, not the original manuscript data. Replace `--root-seed` and the default tariff boundaries with the exact experimental values if they differ from the original implementation.
 
-With a trained checkpoint:
+## Check the neural architecture
 
 ```bash
-python scripts/run_demo.py \
-  --method tpre_alns \
-  --evaluator-checkpoint results/evaluator/twin_branch_evaluator.pt
+python tpre_repro.py model-info
 ```
 
-## Generate a portable data bundle
+Expected output:
+
+```json
+{
+  "trainable_parameters": 65091,
+  "expected_trainable_parameters": 65091,
+  "matches_manuscript": true
+}
+```
+
+## Validate files
 
 ```bash
-python scripts/generate_data.py \
-  --customers 25 \
-  --stations 5 \
-  --instance-seed 100001 \
-  --optimization-seed 300001 \
-  --out-of-sample-seed 900001 \
-  --out data/generated/example
+python tpre_repro.py validate --instance path/to/instance.json
 ```
 
-This writes an instance JSON plus compressed optimization and reporting
-scenario files. Scenario draws are stored and never resampled during method
-evaluation.
+## Tariff-band caveat
 
-## Train the twin-branch evaluator
+The manuscript provides valley/flat/peak prices of `0.45/0.75/1.20 CU/kWh`, but the text available to this clean-room implementation does not provide a machine-readable list of exact time-band boundaries. The default configuration mirrors the schematic:
 
-The publication protocol splits by independent base instance, not by individual
-route-scenario row:
+- 06:00-08:00 valley
+- 08:00-12:00 flat
+- 12:00-18:00 peak
+- 18:00-22:00 flat
+- 22:00-24:00 valley
 
-```bash
-python scripts/train_evaluator.py \
-  --base-instances 60 \
-  --samples 20000 \
-  --epochs 80 \
-  --training-seed 2025 \
-  --out results/evaluator_seed2025
-```
+Replace these boundaries if the original experiment used a different schedule.
 
-For a development check, reduce the base-instance, sample and epoch counts.
-The script refuses fewer than three base instances because a genuine
-instance-level train/validation/test split would then be impossible.
+## Recommended additions before public release
 
-## Run experiments
+1. Add the exact original instance and scenario seeds.
+2. Add the original route pool and train/validation/test split.
+3. Add the training-only normalization statistics.
+4. Add the seed-2025 checkpoint and model-training command.
+5. Add run-level CSV/JSON outputs for every table and figure.
+6. Add an experiment manifest linking code commit, data hashes, checkpoint, seeds, and output files.
+7. Archive a fixed GitHub release in Zenodo and cite its DOI in the paper.
 
-`configs/default.yaml` contains the manuscript-scale settings; it is
-computationally expensive. `configs/quick.yaml` is a CI/development smoke grid.
+## License
 
-```bash
-python scripts/run_experiments.py \
-  --config configs/quick.yaml \
-  --out results/quick
-
-python scripts/run_experiments.py \
-  --config configs/default.yaml \
-  --evaluator-checkpoint results/evaluator_seed2025/twin_branch_evaluator.pt \
-  --out results/manuscript_grid
-```
-
-Aggregate run-level output only after averaging runs within each independent
-base instance:
-
-```bash
-python scripts/make_summary_tables.py \
-  --input results/manuscript_grid/run_metrics.csv \
-  --out results/manuscript_grid/tables
-```
-
-The generated `manifest.json` binds the experiment identifier, configuration
-hash, checkpoint hash, seed policy, software environment and row count.
-`infeasible_ratio` is reported in percentage units to match the manuscript
-tables (for example, `20.0` means 20% of scenario probability mass).
-
-## Tests
-
-```bash
-python -m unittest discover -s tests -v
-# or, after installing the test extra:
-pytest
-```
-
-Tests cover Algorithm S2 ranges, scenario-state identities, stored-wait rules,
-tariff boundaries, distinct depot copies, continuous-work handling, planning /
-scenario-cost separation, finite-distribution CVaR, 24-feature semantics,
-normalization, feasible training-pool construction, model parameter counts and
-an ALNS smoke run. See [`docs/VALIDATION.md`](docs/VALIDATION.md) for the
-release-verification record.
-
-## Repository layout
-
-```text
-configs/                      Full and quick experiment configurations
-docs/                         Method mapping and reproducibility checklist
-scripts/generate_data.py      Persist seeded instance/scenario bundles
-scripts/run_demo.py           Small end-to-end run
-scripts/train_evaluator.py    Instance-disjoint evaluator training
-scripts/run_experiments.py    Configured routing experiment grid
-scripts/make_summary_tables.py Base-instance-first aggregation
-scripts/run_milp_reference.py Optional deterministic Gurobi reference
-src/tpre_alns/entities.py     Typed instance/scenario/solution records
-src/tpre_alns/instance.py     Algorithm S2 and instance I/O
-src/tpre_alns/scenarios.py    Scenario generation, tariffs and severity ranks
-src/tpre_alns/planning.py     Energy/rest restoration and plan certification
-src/tpre_alns/evaluation.py   Fixed-rule recourse and CVaR objective
-src/tpre_alns/features.py     24 features and supervised labels
-src/tpre_alns/evaluator.py    Twin/single-branch networks and HC proxy
-src/tpre_alns/alns.py         TPRE-ALNS search
-src/tpre_alns/baselines.py    Method-specific ablations and baselines
-src/tpre_alns/experiments.py  Manifests and disjoint-seed experiment runner
-src/tpre_alns/milp_reference.py Deterministic first-stage MILP
-tests/                        Deterministic regression and smoke tests
-```
-
-## Interpretation
-
-The generator creates controlled computational instances; it is not calibrated
-to a particular delivery fleet or public charging network. Costs are normalized
-cost units. New runs from this repository support method verification and
-sensitivity analysis but are not field forecasts.
-
-## License and citation
-
-Code is released under the MIT License. Use `CITATION.cff` and cite the
-associated manuscript when using the implementation.
+MIT License. See `LICENSE`.

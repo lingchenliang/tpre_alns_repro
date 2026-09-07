@@ -1,0 +1,88 @@
+{
+  "battery_capacity_kwh": 80.0,
+  "charger_count_choices": [
+    4,
+    6,
+    8
+  ],
+  "charger_count_probabilities": [
+    0.3,
+    0.4,
+    0.3
+  ],
+  "charging_power_choices_kw": [
+    60,
+    120
+  ],
+  "charging_power_probabilities": [
+    0.5,
+    0.5
+  ],
+  "coordinate_max_km": 100.0,
+  "coordinate_min_km": 0.0,
+  "customer_demand_max_kg": 50,
+  "customer_demand_min_kg": 10,
+  "cvar_alpha": 0.9,
+  "depot_x_km": 50.0,
+  "depot_y_km": 50.0,
+  "driver_cost_cu_per_hour": 25.0,
+  "energy_kwh_per_km": 0.24,
+  "horizon_minutes": 1080,
+  "infeasibility_penalty_cu": 10000.0,
+  "initial_battery_kwh": 80.0,
+  "interval_minutes": 60,
+  "local_repair_fixed_cost_cu": 50.0,
+  "max_continuous_work_minutes": 240.0,
+  "minimum_rest_minutes": 30.0,
+  "reported_unavailable_probability": 0.05,
+  "risk_aversion_lambda": 0.5,
+  "route_risk_mu_cu": 100.0,
+  "route_risk_nu_cu": 25.0,
+  "safety_battery_kwh": 8.0,
+  "service_time_max_minutes": 15.0,
+  "service_time_min_minutes": 5.0,
+  "speed_km_per_minute": 0.65,
+  "station_count_by_customers": {
+    "100": 12,
+    "25": 5,
+    "50": 8
+  },
+  "tariff_bands": [
+    {
+      "end_minute": 120,
+      "label": "valley",
+      "price_cu_per_kwh": 0.45,
+      "start_minute": 0
+    },
+    {
+      "end_minute": 360,
+      "label": "flat",
+      "price_cu_per_kwh": 0.75,
+      "start_minute": 120
+    },
+    {
+      "end_minute": 720,
+      "label": "peak",
+      "price_cu_per_kwh": 1.2,
+      "start_minute": 360
+    },
+    {
+      "end_minute": 960,
+      "label": "flat",
+      "price_cu_per_kwh": 0.75,
+      "start_minute": 720
+    },
+    {
+      "end_minute": 1080,
+      "label": "valley",
+      "price_cu_per_kwh": 0.45,
+      "start_minute": 960
+    }
+  ],
+  "time_window_width_max_minutes": 180.0,
+  "time_window_width_min_minutes": 60.0,
+  "travel_cost_cu_per_km": 1.2,
+  "vehicle_capacity_kg": 1000.0,
+  "vehicle_fixed_cost_cu": 100.0,
+  "waiting_cost_cu_per_hour": 30.0
+}
